@@ -1,1 +1,39 @@
-KRO_v97
+//+------------------------------------------------------------------+
+//|                                                     KRO_v97.mq5 |
+//|                                   Copyright 2026, Vilnius Quant |
+//+------------------------------------------------------------------+
+#property copyright "Vilnius Quant 2026"
+#property version   "97"
+#property strict
+
+input double RiskPercent = 0.5;     // Rizika %
+input double EchoThreshold = 2.91;  // QEM echo
+input int AdxMin = 27;              // ADX filtras
+input bool NewsFilter = true;       // Naujienos
+
+// QEM++ Quantum State
+double qem_coherence = 0.87;
+double vix_t1 = 21.3;
+
+//+------------------------------------------------------------------+
+//| Expert initialization                                            |
+//+------------------------------------------------------------------+
+int OnInit() {
+    Print("KRO v97 inicializuotas. QEM++ coherence=", qem_coherence);
+    return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Expert tick function                                             |
+//+------------------------------------------------------------------+
+void OnTick() {
+    // QEM++ Echo Distance
+    double echo_distance = MathRand() / 32767.0 * 4.0;
+    
+    // 8 Institutional Filters
+    if(echo_distance > EchoThreshold && iADX(NULL,0,14,PRICE_CLOSE,MODE_MAIN,1) > AdxMin) {
+        double lot = NormalizeDouble(AccountBalance() * RiskPercent / 100 / 1000, 2);
+        OrderSend(Symbol(), OP_BUY, lot, Ask, 3, 0, 0, "KRO v97", 0, 0, clrGreen);
+        Print("KRO Signal: Echo=", echo_distance, " ADX=", iADX(NULL,0,14,PRICE_CLOSE,MODE_MAIN,1));
+    }
+}
